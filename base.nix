@@ -180,6 +180,7 @@
         gnumake
         go
         golangci-lint-langserver
+        golangci-lint
         gopls
         gparted
         gpick
