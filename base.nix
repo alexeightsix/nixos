@@ -8,11 +8,16 @@
           useOSProber = true;
         };
       };
-      # Disable the PC speaker
+
       blacklistedKernelModules = [
         "pcspkr"
         "snd_pcsp"
       ];
+    };
+
+    hardware.bluetooth = {
+      enable = true;
+      powerOnBoot = true;
     };
 
     networking = {
@@ -60,6 +65,9 @@
 
       xserver = {
         enable = true;
+        xkb = {
+          options = "caps:escape";
+        };
         displayManager = {
           lightdm = {
             enable = true;
@@ -139,6 +147,7 @@
     ];
 
     system.stateVersion = "25.05";
+    system.copySystemConfiguration = true;
 
     environment = {
       variables = {
@@ -179,8 +188,9 @@
         gnome-tweaks
         gnumake
         go
-        golangci-lint-langserver
         golangci-lint
+        golangci-lint-langserver
+        golangci-lint-langserver
         gopls
         gparted
         gpick
@@ -195,10 +205,14 @@
         lazygit
         libadwaita
         libvirt
-        lua
         lua-language-server
-        lua54Packages.compat53
-        luarocks
+        lua51Packages.lua
+        lua51Packages.luautf8
+        htop
+        luajit
+        luajitPackages.luarocks
+        luajitPackages.luarocks
+        luajitPackages.luautf8
         mariadb
         ncdu
         nixfmt-classic
@@ -230,6 +244,7 @@
         typescript-language-server
         virt-manager
         vlc
+        volumeicon
         vscode-langservers-extracted
         wget
         xclip
@@ -238,6 +253,10 @@
         zip
         zls
         zoom-us
+
+        (pkgs.writeShellScriptBin "sound" ''
+          	    exec ${pkgs.pavucontrol}/bin/pavucontrol "$@"
+          	'')
       ];
     };
   };

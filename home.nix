@@ -1,7 +1,13 @@
 { config, pkgs, lib, ... }:
 
 let
-  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-25.05.tar.gz";
+  home-manager = builtins.fetchTarball
+    "https://github.com/nix-community/home-manager/archive/release-25.05.tar.gz";
+
+  dracula-zsh = builtins.fetchGit {
+    url = "https://github.com/dracula/zsh";
+    rev = "75ea3f5e1055291caf56b4aea6a5d58d00541c41";
+  };
 
   plugins = {
     cmp = import ./nvim/plugins/cmp.nix { inherit pkgs; };
@@ -18,14 +24,22 @@ let
     treesitter = import ./nvim/plugins/treesitter.nix { inherit pkgs; };
     undotree = import ./nvim/plugins/undotree.nix { inherit pkgs; };
     urlOpen = import ./nvim/plugins/url_open.nix { inherit pkgs; };
+    sense-nvim = pkgs.vimUtils.buildVimPlugin {
+      doCheck = false;
+      name = "sense.nvim";
+      src = pkgs.fetchFromGitHub {
+        owner = "boltlessengineer";
+        repo = "sense.nvim";
+        rev = "74e61f251fffc64c4f29160569ccde087316b798";
+        hash = "sha256-I3k8811otMCTppqeCuu5buevJgDyNtn5nreFw8GFlL8=";
+      };
+    };
   };
 in
 {
   imports = [ (import "${home-manager}/nixos") ];
 
-  users.users.alex = {
-    isNormalUser = true;
-  };
+  users.users.alex = { isNormalUser = true; };
 
   home-manager.users.alex = { pkgs, lib, ... }: {
 
@@ -80,9 +94,7 @@ in
           size = 8.0;
         };
         workspaceLayout = "default";
-        floating = {
-          modifier = "Mod4";
-        };
+        floating = { modifier = "Mod4"; };
         keybindings = {
           "Mod4+Return" = "exec i3-sensible-terminal";
           "Mod4+q" = "kill";
@@ -148,7 +160,8 @@ in
           "Mod4+a" = "focus parent";
 
           "Mod4+Shift+s" = "exec --no-startup-id systemctl suspend";
-          "Mod4+d" = "exec --no-startup-id ${pkgs.dmenu}/bin/dmenu_run -nf '#BBBBBB' -nb '#222222' -sb '#5294e2' -sf '#EEEEEE' -fn 'monospace-10'";
+          "Mod4+d" =
+            "exec --no-startup-id ${pkgs.dmenu}/bin/dmenu_run -nf '#BBBBBB' -nb '#222222' -sb '#5294e2' -sf '#EEEEEE' -fn 'monospace-10'";
         };
         keycodebindings = {
           "79" = "move container to workspace 7";
@@ -172,7 +185,11 @@ in
             { class = "^[tT]eams.*"; }
             { class = "^[dD]iscord.*"; }
           ];
-          "9" = [{ class = "^[zZ]oom$"; floating = true; instance = "yad"; }];
+          "9" = [{
+            class = "^[zZ]oom$";
+            floating = true;
+            instance = "yad";
+          }];
         };
         modes = {
           resize = {
@@ -215,56 +232,53 @@ in
           };
         };
 
-        bars = [
-          {
-            mode = "hide";
-            hiddenState = "hide";
-            position = "bottom";
-            trayPadding = 0;
-            statusCommand = "${pkgs.i3status-rust}/bin/i3status-rs $HOME/.config/i3status-rust/config-default.toml";
-            workspaceNumbers = false;
-            colors = {
-              background = "#383c4a";
-              statusline = "#ffffff";
-              separator = "#e345ff";
-              activeWorkspace = {
-                border = "#5294e2";
-                background = "#8b8b8b";
-                text = "#383c4a";
-              };
-              focusedWorkspace = {
-                border = "#5294e2";
-                background = "#5294e2";
-                text = "#ffffff";
-              };
-              inactiveWorkspace = {
-                border = "#383c4a";
-                background = "#383c4a";
-                text = "#b0b5bd";
-              };
-              urgentWorkspace = {
-                border = "#e53935";
-                background = "#e53935";
-                text = "#ffffff";
-              };
-              bindingMode = {
-                border = "#FF5555";
-                background = "#FF5555";
-                text = "#F8F8F2";
-              };
+        bars = [{
+          mode = "hide";
+          hiddenState = "hide";
+          position = "bottom";
+          trayPadding = 0;
+          statusCommand =
+            "${pkgs.i3status-rust}/bin/i3status-rs $HOME/.config/i3status-rust/config-default.toml";
+          workspaceNumbers = false;
+          colors = {
+            background = "#383c4a";
+            statusline = "#ffffff";
+            separator = "#e345ff";
+            activeWorkspace = {
+              border = "#5294e2";
+              background = "#8b8b8b";
+              text = "#383c4a";
             };
-            extraConfig = ''
-              padding 0 0 0 0
-              bindsym button1 nop
-              bindsym button4 nop
-              bindsym button5 nop
-              bindsym button6 nop
-              bindsym button7 nop
-            '';
-          }
-        ];
-
-
+            focusedWorkspace = {
+              border = "#5294e2";
+              background = "#5294e2";
+              text = "#ffffff";
+            };
+            inactiveWorkspace = {
+              border = "#383c4a";
+              background = "#383c4a";
+              text = "#b0b5bd";
+            };
+            urgentWorkspace = {
+              border = "#e53935";
+              background = "#e53935";
+              text = "#ffffff";
+            };
+            bindingMode = {
+              border = "#FF5555";
+              background = "#FF5555";
+              text = "#F8F8F2";
+            };
+          };
+          extraConfig = ''
+            padding 0 0 0 0
+            bindsym button1 nop
+            bindsym button4 nop
+            bindsym button5 nop
+            bindsym button6 nop
+            bindsym button7 nop
+          '';
+        }];
 
       };
 
@@ -286,22 +300,12 @@ in
 
     programs.git = {
       enable = true;
-      aliases = {
-        gs = "status";
-      };
+      aliases = { gs = "status"; };
       extraConfig = {
-        init = {
-          defaultBranch = "master";
-        };
-        core = {
-          pager = "delta";
-        };
-        interactive = {
-          diffFilter = "delta --color-only";
-        };
-        merge = {
-          conflictStyle = "zdiff3";
-        };
+        init = { defaultBranch = "master"; };
+        core = { pager = "delta"; };
+        interactive = { diffFilter = "delta --color-only"; };
+        merge = { conflictStyle = "zdiff3"; };
         user = {
           name = "Alexander Latour";
           email = "alexlatour@gmail.com";
@@ -317,16 +321,10 @@ in
 
     programs.lazydocker = {
       enable = true;
-      settings = {
-        gui = {
-          returnImmediately = true;
-        };
-      };
+      settings = { gui = { returnImmediately = true; }; };
     };
 
-    programs.lazygit = {
-      enable = true;
-    };
+    programs.lazygit = { enable = true; };
 
     programs.alacritty = {
       enable = true;
@@ -338,9 +336,7 @@ in
             blinking = "Never";
           };
         };
-        env = {
-          term = "alacritty";
-        };
+        env = { term = "alacritty"; };
         font = {
           bold = {
             family = "JetBrains Mono Nerd Font";
@@ -391,16 +387,12 @@ in
       focusEvents = true; # Better terminal integration
 
       # Plugin configuration
-      plugins = with pkgs.tmuxPlugins; [
-        vim-tmux-navigator
-        dracula
-        sensible
-      ];
+      plugins = with pkgs.tmuxPlugins; [ vim-tmux-navigator dracula sensible ];
 
       # Custom configuration that can't be set via dedicated options
       extraConfig = ''
           set -g @dracula-plugins " "
-      
+
           # Terminal overrides and additional settings
           set -g default-terminal "alacritty"
           set -g default-terminal "screen-256color"
@@ -409,16 +401,16 @@ in
           set -gw pane-base-index 1
           set -gw xterm-keys on
           set -g renumber-windows on
-      
+
           # Pane navigation (vim-like)
           bind h select-pane -L
           bind j select-pane -D
           bind k select-pane -U
           bind l select-pane -R
-      
+
           # Clear screen binding
           bind C-l send-keys C-l
-      
+
           # Window and pane creation with current path
           bind c new-window -c "#{pane_current_path}"
           bind '"' split-window -c "#{pane_current_path}"
@@ -439,6 +431,8 @@ in
       enable = true;
 
       enableCompletion = true;
+      autosuggestion = { enable = true; };
+      syntaxHighlighting = { enable = true; };
 
       shellAliases = {
         lg = "lazygit";
@@ -447,20 +441,13 @@ in
         untar = "tar -xvzf";
       };
 
-      sessionVariables = {
-        ZSH_AUTOSTART = "false";
-      };
+      sessionVariables = { ZSH_AUTOSTART = "false"; };
 
-      zplug = {
+      oh-my-zsh = {
         enable = true;
-        plugins = [
-          { name = "dracula/zsh"; tags = [ as:theme ]; }
-          { name = "plugins/colorize"; tags = [ from:oh-my-zsh ]; }
-          { name = "plugins/git"; tags = [ from:oh-my-zsh ]; }
-          { name = "plugins/docker-compose"; tags = [ from:oh-my-zsh ]; }
-          { name = "plugins/fzf"; tags = [ from:oh-my-zsh ]; }
-          { name = "plugins/tmux"; tags = [ from:oh-my-zsh ]; }
-        ];
+        theme = "dracula";
+        custom = "${dracula-zsh}";
+        plugins = [ "colorize" "git" "docker-compose" "fzf" "tmux" ];
       };
     };
 
@@ -483,9 +470,32 @@ in
 
     programs.neovim = {
       enable = true;
+      extraLuaPackages = with pkgs; [
+        luajitPackages.luarocks
+        luajitPackages.luautf8
+      ];
       plugins = with pkgs.vimPlugins; [
-        plenary-nvim
+        cmp-nvim-lsp
+        cmp-nvim-lsp-signature-help
+        cmp-path
+        fidget-nvim
+        grug-far-nvim
+        harpoon2
+        indent-blankline-nvim
+        lsp_signature-nvim
         mini-icons
+        nvim-lspconfig
+        openingh-nvim
+        plenary-nvim
+        rocks-config-nvim
+        rocks-nvim
+        telescope-fzf-native-nvim
+        telescope-live-grep-args-nvim
+        vim-fugitive
+        vim-illuminate
+        vim-tmux-navigator
+
+        plugins.cmp
 
         plugins.colorizer
         plugins.comment
@@ -493,35 +503,75 @@ in
         plugins.conform
         plugins.copilot
         plugins.dracula
-        plugins.undotree
-        plugins.urlOpen
         plugins.fidget
         plugins.gitSigns
-
-        harpoon2
-        indent-blankline-nvim
-        vim-fugitive
-        vim-illuminate
-        vim-tmux-navigator
-        openingh-nvim
-
-        telescope-live-grep-args-nvim
-        telescope-fzf-native-nvim
-
-        nvim-lspconfig
-        lsp_signature-nvim
-
-        grug-far-nvim
-
-        cmp-nvim-lsp
-        cmp-nvim-lsp-signature-help
-        cmp-path
-
-        plugins.cmp
         plugins.oil
+        plugins.sense-nvim
         plugins.telescope
-
         plugins.treesitter
+        plugins.undotree
+        plugins.urlOpen
+
+        nvim-treesitter-parsers.asm
+        nvim-treesitter-parsers.astro
+        nvim-treesitter-parsers.awk
+        nvim-treesitter-parsers.bash
+        nvim-treesitter-parsers.blade
+        nvim-treesitter-parsers.c
+        nvim-treesitter-parsers.cmake
+        nvim-treesitter-parsers.comment
+        nvim-treesitter-parsers.css
+        nvim-treesitter-parsers.csv
+        nvim-treesitter-parsers.desktop
+        nvim-treesitter-parsers.diff
+        nvim-treesitter-parsers.dockerfile
+        nvim-treesitter-parsers.editorconfig
+        nvim-treesitter-parsers.git_config
+        nvim-treesitter-parsers.git_rebase
+        nvim-treesitter-parsers.gitattributes
+        nvim-treesitter-parsers.gitcommit
+        nvim-treesitter-parsers.gitignore
+        nvim-treesitter-parsers.go
+        nvim-treesitter-parsers.gomod
+        nvim-treesitter-parsers.gosum
+        nvim-treesitter-parsers.gotmpl
+        nvim-treesitter-parsers.html
+        nvim-treesitter-parsers.http
+        nvim-treesitter-parsers.java
+        nvim-treesitter-parsers.javascript
+        nvim-treesitter-parsers.jq
+        nvim-treesitter-parsers.jsdoc
+        nvim-treesitter-parsers.json
+        nvim-treesitter-parsers.jsonc
+        nvim-treesitter-parsers.llvm
+        nvim-treesitter-parsers.lua
+        nvim-treesitter-parsers.luadoc
+        nvim-treesitter-parsers.make
+        nvim-treesitter-parsers.markdown
+        nvim-treesitter-parsers.markdown_inline
+        nvim-treesitter-parsers.nginx
+        nvim-treesitter-parsers.nix
+        nvim-treesitter-parsers.odin
+        nvim-treesitter-parsers.php
+        nvim-treesitter-parsers.phpdoc
+        nvim-treesitter-parsers.printf
+        nvim-treesitter-parsers.regex
+        nvim-treesitter-parsers.scss
+        nvim-treesitter-parsers.sql
+        nvim-treesitter-parsers.ssh_config
+        nvim-treesitter-parsers.templ
+        nvim-treesitter-parsers.terraform
+        nvim-treesitter-parsers.tmux
+        nvim-treesitter-parsers.toml
+        nvim-treesitter-parsers.tsv
+        nvim-treesitter-parsers.tsx
+        nvim-treesitter-parsers.typescript
+        nvim-treesitter-parsers.vim
+        nvim-treesitter-parsers.vimdoc
+        nvim-treesitter-parsers.vue
+        nvim-treesitter-parsers.xml
+        nvim-treesitter-parsers.yaml
+        nvim-treesitter-parsers.zig
       ];
       extraLuaConfig = ''
         ${builtins.readFile ./nvim/config/options.lua}
